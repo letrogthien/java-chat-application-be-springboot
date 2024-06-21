@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  mysql-db:
+    image: mysql:8.0
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: Abcd1234
+      MYSQL_DATABASE: winapp
+      
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql-data:/var/lib/mysql
+      - ./sql:/docker-entrypoint-initdb.d
+
+  spring-boot-app:
+      image: letrogthien/foodapi1:latest
+      container_name: spring-boot-app
+      restart: on-failure
+      volumes: 
+        - /myapp/tmp:/tmp
+      ports:
+      - "8080:8080"
+      depends_on:
+        - mysql-db
+
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - spring-boot-app
